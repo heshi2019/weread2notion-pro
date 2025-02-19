@@ -243,12 +243,16 @@ def main():
             bookId = book.get("bookId")
             title = book.get("book").get("title")
             sort = book.get("sort")
+
+            # 这两个if很有意思，如果notion中存在这本书，并且排序和weread中一样，就不进行同步
             if bookId not in notion_books:
                 continue
             if sort == notion_books.get(bookId).get("Sort"):
                 continue
             pageId = notion_books.get(bookId).get("pageId")
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index+1}本。")
+
+            # 这个函数获取了一本的详细信息，具体是什么还不得知，其实也就是WEREAD_CHAPTER_INFO这个接口的返回值
             chapter = weread_api.get_chapter_info(bookId)
             bookmark_list = get_bookmark_list(pageId, bookId)
             reviews = get_review_list(pageId,bookId)
@@ -262,4 +266,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
