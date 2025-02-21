@@ -30,6 +30,8 @@ def get_bookmark_list(page_id, bookId):
         for x in results
     }
     dict2 = {get_rich_text_from_result(x, "blockId"): x.get("id") for x in results}
+
+    # 获取一本书而划线内容，具体json格式还得测试
     bookmarks = weread_api.get_bookmark_list(bookId)
     for i in bookmarks:
         if i.get("bookmarkId") in dict1:
@@ -56,7 +58,10 @@ def get_review_list(page_id,bookId):
         for x in results
     }
     dict2 = {get_rich_text_from_result(x, "blockId"): x.get("id") for x in results}
+
+    # 获取一本书的笔记内容，具体json格式未知，本函数其他的部分都是和notion交互
     reviews = weread_api.get_review_list(bookId)
+
     for i in reviews:
         if i.get("reviewId") in dict1:
             i["blockId"] = dict1.pop(i.get("reviewId"))
@@ -254,10 +259,21 @@ def main():
 
             # 这个函数获取了一本的详细信息，具体是什么还不得知，其实也就是WEREAD_CHAPTER_INFO这个接口的返回值
             chapter = weread_api.get_chapter_info(bookId)
+
+            # 获取bookid这本书的划线信息
             bookmark_list = get_bookmark_list(pageId, bookId)
+
+            # 获取一本书的笔记信息，我关注的内容，在该函数中只有调用一个API的一行
             reviews = get_review_list(pageId,bookId)
+
+            # 将划线内容和笔记内容合并，extend函数会将入参的列表直接添加到对应的列表中
             bookmark_list.extend(reviews)
+
+            # 这个函数将一本书的划线，笔记，章节做了整合，但也涉及notion交互
             content = sort_notes(pageId, chapter, bookmark_list)
+
+
+            # 将划线内容和笔记内容插入到notion中
             append_blocks(pageId, content)
             properties = {
                 "Sort":get_number(sort)

@@ -100,7 +100,7 @@ class WeReadApi:
         params = dict(bookId=bookId)
         r = self.session.get(WEREAD_BOOKMARKLIST_URL, params=params)
         if r.ok:
-            with open("bookmark.json", "w") as f:
+            with open("bookmark.json", "w",encoding='utf-8') as f:
                 f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
             bookmarks = r.json().get("updated")
             return bookmarks
