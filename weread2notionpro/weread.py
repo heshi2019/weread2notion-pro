@@ -1,284 +1,210 @@
-from weread2notionpro.notion_helper import NotionHelper
+import pendulum
+
 from weread2notionpro.weread_api import WeReadApi
 
-from weread2notionpro.utils import (
-    get_block,
-    get_heading,
-    get_number,
-    get_number_from_result,
-    get_quote,
-    get_rich_text_from_result,
-    get_table_of_contents,
-)
 
-
-def get_bookmark_list(page_id, bookId):
-    """获取我的划线"""
-    filter = {
-        "and": [
-            {"property": "书籍", "relation": {"contains": page_id}},
-            {"property": "blockId", "rich_text": {"is_not_empty": True}},
-        ]
-    }
-    results = notion_helper.query_all_by_book(
-        notion_helper.bookmark_database_id, filter
-    )
-    dict1 = {
-        get_rich_text_from_result(x, "bookmarkId"): get_rich_text_from_result(
-            x, "blockId"
-        )
-        for x in results
-    }
-    dict2 = {get_rich_text_from_result(x, "blockId"): x.get("id") for x in results}
-
-    # 获取一本书而划线内容，具体json格式还得测试
-    bookmarks = weread_api.get_bookmark_list(bookId)
-    for i in bookmarks:
-        if i.get("bookmarkId") in dict1:
-            i["blockId"] = dict1.pop(i.get("bookmarkId"))
-    for blockId in dict1.values():
-        notion_helper.delete_block(blockId)
-        notion_helper.delete_block(dict2.get(blockId))
-    return bookmarks
-
-
-def get_review_list(page_id,bookId):
-    """获取笔记"""
-    filter = {
-        "and": [
-            {"property": "书籍", "relation": {"contains": page_id}},
-            {"property": "blockId", "rich_text": {"is_not_empty": True}},
-        ]
-    }
-    results = notion_helper.query_all_by_book(notion_helper.review_database_id, filter)
-    dict1 = {
-        get_rich_text_from_result(x, "reviewId"): get_rich_text_from_result(
-            x, "blockId"
-        )
-        for x in results
-    }
-    dict2 = {get_rich_text_from_result(x, "blockId"): x.get("id") for x in results}
-
-    # 获取一本书的笔记内容，具体json格式未知，本函数其他的部分都是和notion交互
-    reviews = weread_api.get_review_list(bookId)
-
-    for i in reviews:
-        if i.get("reviewId") in dict1:
-            i["blockId"] = dict1.pop(i.get("reviewId"))
-    for blockId in dict1.values():
-        notion_helper.delete_block(blockId)
-        notion_helper.delete_block(dict2.get(blockId))
-    return reviews
-
-
-def check(bookId):
-    """检查是否已经插入过"""
-    filter = {"property": "BookId", "rich_text": {"equals": bookId}}
-    response = notion_helper.query(
-        database_id=notion_helper.book_database_id, filter=filter
-    )
-    if len(response["results"]) > 0:
-        return response["results"][0]["id"]
-    return None
-
-
-def get_sort():
-    """获取database中的最新时间"""
-    filter = {"property": "Sort", "number": {"is_not_empty": True}}
-    sorts = [
-        {
-            "property": "Sort",
-            "direction": "descending",
-        }
-    ]
-    response = notion_helper.query(
-        database_id=notion_helper.book_database_id,
-        filter=filter,
-        sorts=sorts,
-        page_size=1,
-    )
-    if len(response.get("results")) == 1:
-        return response.get("results")[0].get("properties").get("Sort").get("number")
-    return 0
-
-
-
-def sort_notes(page_id, chapter, bookmark_list):
-    """对笔记进行排序"""
-    bookmark_list = sorted(
-        bookmark_list,
-        key=lambda x: (
-            x.get("chapterUid", 1),
-            0
-            if (x.get("range", "") == "" or x.get("range").split("-")[0] == "")
-            else int(x.get("range").split("-")[0]),
-        ),
-    )
-
-    notes = []
-    if chapter != None:
-        filter = {"property": "书籍", "relation": {"contains": page_id}}
-        results = notion_helper.query_all_by_book(
-            notion_helper.chapter_database_id, filter
-        )
-        dict1 = {
-            get_number_from_result(x, "chapterUid"): get_rich_text_from_result(
-                x, "blockId"
-            )
-            for x in results
-        }
-        dict2 = {get_rich_text_from_result(x, "blockId"): x.get("id") for x in results}
-        d = {}
-        for data in bookmark_list:
-            chapterUid = data.get("chapterUid", 1)
-            if chapterUid not in d:
-                d[chapterUid] = []
-            d[chapterUid].append(data)
-        for key, value in d.items():
-            if key in chapter:
-                if key in dict1:
-                    chapter.get(key)["blockId"] = dict1.pop(key)
-                notes.append(chapter.get(key))
-            notes.extend(value)
-        for blockId in dict1.values():
-            notion_helper.delete_block(blockId)
-            notion_helper.delete_block(dict2.get(blockId))
-    else:
-        notes.extend(bookmark_list)
-    return notes
-
-
-def append_blocks(id, contents):
-    print(f"笔记数{len(contents)}")
-    before_block_id = ""
-    block_children = notion_helper.get_block_children(id)
-    if len(block_children) > 0 and block_children[0].get("type") == "table_of_contents":
-        before_block_id = block_children[0].get("id")
-    else:
-        response = notion_helper.append_blocks(
-            block_id=id, children=[get_table_of_contents()]
-        )
-        before_block_id = response.get("results")[0].get("id")
-    blocks = []
-    sub_contents = []
-    l = []
-    for content in contents:
-        if len(blocks) == 100:
-            results = append_blocks_to_notion(id, blocks, before_block_id, sub_contents)
-            before_block_id = results[-1].get("blockId")
-            l.extend(results)
-            blocks.clear()
-            sub_contents.clear()
-            if not notion_helper.sync_bookmark and content.get("type")==0:
-                continue
-            blocks.append(content_to_block(content))
-            sub_contents.append(content)
-        elif "blockId" in content:
-            if len(blocks) > 0:
-                l.extend(
-                    append_blocks_to_notion(id, blocks, before_block_id, sub_contents)
-                )
-                blocks.clear()
-                sub_contents.clear()
-            before_block_id = content["blockId"]
-        else:
-            if not notion_helper.sync_bookmark and content.get("type")==0:
-                continue
-            blocks.append(content_to_block(content))
-            sub_contents.append(content)
-    
-    if len(blocks) > 0:
-        l.extend(append_blocks_to_notion(id, blocks, before_block_id, sub_contents))
-    for index, value in enumerate(l):
-        print(f"正在插入第{index+1}条笔记，共{len(l)}条")
-        if "bookmarkId" in value:
-            notion_helper.insert_bookmark(id, value)
-        elif "reviewId" in value:
-            notion_helper.insert_review(id, value)
-        else:
-            notion_helper.insert_chapter(id, value)
-
-
-def content_to_block(content):
-    if "bookmarkId" in content:
-        return get_block(
-            content.get("markText",""),
-            notion_helper.block_type,
-            notion_helper.show_color,
-            content.get("style"),
-            content.get("colorStyle"),
-            content.get("reviewId"),
-        )
-    elif "reviewId" in content:
-        return get_block(
-            content.get("content",""),
-            notion_helper.block_type,
-            notion_helper.show_color,
-            content.get("style"),
-            content.get("colorStyle"),
-            content.get("reviewId"),
-        )
-    else:
-        return get_heading(content.get("level"), content.get("title"))
-
-
-def append_blocks_to_notion(id, blocks, after, contents):
-    response = notion_helper.append_blocks_after(
-        block_id=id, children=blocks, after=after
-    )
-    results = response.get("results")
-    l = []
-    for index, content in enumerate(contents):
-        result = results[index]
-        if content.get("abstract") != None and content.get("abstract") != "":
-            notion_helper.append_blocks(
-                block_id=result.get("id"), children=[get_quote(content.get("abstract"))]
-            )
-        content["blockId"] = result.get("id")
-        l.append(content)
-    return l
-
-weread_api = WeReadApi()
-notion_helper = NotionHelper()
 def main():
-    notion_books = notion_helper.get_all_book()
-    books = weread_api.get_notebooklist()
+    we_read_api = WeReadApi()
+
+    # 这个函数实际上是使用了WEREAD_HISTORY_URL这个接口，每日阅读历史，数据暂不处理
+    # api_data = we_read_api.get_api_data()
+    # print(f"we_read_api.get_api_data接口返回了什么数据，输出格式如下：{api_data}")
+    # 返回目前书架，数据暂不处理
+    # bookshelf_books = we_read_api.get_bookshelf()
+    # print(f"we_read_api.get_bookshelf接口返回了什么数据，输出格式如下：{bookshelf_books}")
+
+
+    #微信读书API，获取基本数据
+    books = we_read_api.get_notebooklist()
+
     if books != None:
         for index, book in enumerate(books):
             bookId = book.get("bookId")
             title = book.get("book").get("title")
-            sort = book.get("sort")
 
-            # 这两个if很有意思，如果notion中存在这本书，并且排序和weread中一样，就不进行同步
-            if bookId not in notion_books:
-                continue
-            if sort == notion_books.get(bookId).get("Sort"):
-                continue
-            pageId = notion_books.get(bookId).get("pageId")
-            print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index+1}本。")
+            print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
-            # 这个函数获取了一本的详细信息，具体是什么还不得知，其实也就是WEREAD_CHAPTER_INFO这个接口的返回值
-            chapter = weread_api.get_chapter_info(bookId)
+            if "莫斯科绅士（英剧同名原著小说）" not in title:
+                continue  # 跳过不符合条件的书籍
+            # 书籍id
+            bookId = book.get("bookId")
+            # 书名
+            title = book.get("book").get("title")
+            # 作者
+            name = book.get("book").get("author")
+            # 封面
+            cover = book.get("book").get("cover")
 
+            # 书籍信息
+            get_bookinfo = we_read_api.get_bookinfo(bookId)
+            # 简介
+            briefIntroduction = get_bookinfo.get("intro")
+            # 书籍分类获取
+            classification1 = None
+            classification2 = None
+            classification3 = None
+            if book.get("categories"):
+                classification1 = book.get("categories").get("title")
+
+            classification2 = book.get("book").get("categories")[0].get("title")
+            classification3 = get_bookinfo.get("category")
+            # 书籍分类
+            classification = classification1 or classification2 or classification3
+
+            # 章节阅读信息
+            readInfo = we_read_api.get_read_info(bookId)
+
+            # 阅读状态
+            readSign = readInfo.get("markedStatus")
+            if readSign == 4:
+                readSign = "已读完"
+            elif readSign == 1:
+                readSign = "未读"
+            else:
+                readSign == "在读"
+
+            # 阅读进度  百分比
+            Progress = readInfo.get("readingProgress")
+            # 阅读时间 格式时分秒
+            ReadTime = readInfo.get("readingTime")
+            if ReadTime:
+                seconds = int(ReadTime)
+                hours = seconds // 3600
+                minutes = (seconds % 3600) // 60
+                seconds = seconds % 60
+            ReadDayTime = f"{hours}:{minutes}:{seconds}"
+            # 阅读天数
+            ReadDay = readInfo.get("totalReadDay")
+            # 开始阅读时间
+            StartDay = pendulum.from_timestamp(
+                readInfo.get("readDetail").get("beginReadingDate")).to_datetime_string() if readInfo.get(
+                "readDetail").get("beginReadingDate") else None
+            # 最后阅读时间
+            LastDay = pendulum.from_timestamp(
+                readInfo.get("readDetail").get("lastReadingDate")).to_datetime_string() if readInfo.get(
+                "readDetail").get("lastReadingDate") else None
+            # 最晚阅读时间
+            LatestDay = pendulum.from_timestamp(
+                readInfo.get("readDetail").get("deepestNightReadTime")).to_datetime_string() if readInfo.get(
+                "readDetail").get("deepestNightReadTime") else None
+            # 书籍阅读链接
+            url = we_read_api.get_url(bookId)
+
+            # 书籍信息整合
+            BookInformation = {"bookId":bookId,"title":title,"classification":classification,"cover":cover,"name":name,
+                               "readSign":readSign,"briefIntroduction":briefIntroduction,"Progress":Progress,"ReadDay":ReadDay,
+                               "ReadDayTime":ReadDayTime,"StartDay":StartDay,"LastDay":LastDay,"LatestDay":LatestDay,
+                               "ReadUrl":url}
+
+            # 章节信息
+            chapter = we_read_api.get_chapter_info(bookId)
             # 获取bookid这本书的划线信息
-            bookmark_list = get_bookmark_list(pageId, bookId)
+            bookmark_list = we_read_api.get_bookmark_list(bookId)
+            # 获取一本书的笔记信息
+            reviews = we_read_api.get_review_list(bookId)
 
-            # 获取一本书的笔记信息，我关注的内容，在该函数中只有调用一个API的一行
-            reviews = get_review_list(pageId,bookId)
+            # 章节，划线，笔记信息整合
+            MyExtendList=MyExtend(chapter,bookmark_list,reviews)
 
-            # 将划线内容和笔记内容合并，extend函数会将入参的列表直接添加到对应的列表中
-            bookmark_list.extend(reviews)
+            print(f"章节，划线，笔记信息整合：{MyExtendList}")
+            print(f"书籍信息：{BookInformation}")
 
-            # 这个函数将一本书的划线，笔记，章节做了整合，但也涉及notion交互
-            content = sort_notes(pageId, chapter, bookmark_list)
+# 参数信息 1.章节信息；2.划线信息；3.笔记信息
+def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
 
 
-            # 将划线内容和笔记内容插入到notion中
-            append_blocks(pageId, content)
-            properties = {
-                "Sort":get_number(sort)
-            }
-            notion_helper.update_book_page(page_id=pageId,properties=properties)
+    # 参考下原本程序中的整合方式，将所有的章节，划线，笔记，去掉外壳后，以每一个信息点都是一个字典的方式，按章节和sort排序，
+    # 最后是一个字典列表，但这样最后的数据并不是一个较为方便的数据集，我想要的数据为，一个字典，key为章节id，value为本章节的数据信息，
+    # 笔记和划线信息都放在某个字段后，以列表方式存储字典
+
+    # 尝试重新遍历，在每次遍历的时候，使用两个数字控制章节id a+b，a为整数位，b为小数位，如遇到了anchors锚点，
+    # 则整数位+1，开始递增小数位，直到下次遇见anchors锚点，整数位+1，小数位重置为0.0,。如未遇到anchors锚点
+    # 则一直递增整数位，if外层使用标志位来控制for循环是递增整数还是小数
+
+    # 标志位及数字的整数小数部分
+    sign = 0
+    i = 0
+    i_x = 0.0
+
+    # 章节字典
+    chapter_translations1 = {}
+
+    # 删除点评
+    del get_chapter_info[1000000]
+
+    for key, value in get_chapter_info.items():
+
+        # 如果遇见锚点，存储锚点及对应的锚点数据，并进行下次循环
+        if "anchors" in value:
+            sign = 1
+            i_x = 0.0
+            i += 1
+
+            chapter_translations1[i + i_x] = value["title"]
+            i_x = 0.1
+            tile = value.get("anchors")[0].get("title")
+            chapter_translations1[i + i_x] = tile
+
+            value["title"] = tile
+            del value["anchors"]
+            continue
+
+        # 使用标志位来控制，现在的章节是否为大标题下的小标题
+        if sign == 0:
+            i += 1
+
+        elif sign == 1:
+            i_x += 0.1
+
+        chapter_translations1[i + i_x] = value["title"]
+
+    get_chapter_info[1000000] = chapter_translations1
+
+    # 划线
+    # 将对应章节的划线放在一个字典中，key为chapterUid，value为一个列表，列表中存放的是该章节的所有划线
+    get_bookmark_list_my = {}
+    for value in get_bookmark_list:
+
+        chapterUid = value.get("chapterUid")
+        createTime = value.get("createTime")
+        markText = value.get("markText")
+        range = value.get("range")
+
+        if chapterUid not in get_bookmark_list_my:
+            get_bookmark_list_my[chapterUid] = [{"createTime": createTime, "markText": markText, "range": range}]
+        else:
+            get_bookmark_list_my[chapterUid].append({"createTime": createTime, "markText": markText})
+
+
+    # 笔记
+    # 将对应章节的划线放在一个字典中，key为chapterUid，value为一个列表，列表中存放的是该章节的所有笔记
+    get_review_list_my = {}
+    for value in get_review_list:
+        chapterUid = value.get("chapterUid")
+        abstract = value.get("abstract")
+        content = value.get("content")
+        createTime = value.get("createTime")
+        range = value.get("range")
+
+        if chapterUid not in get_review_list_my:
+            get_review_list_my[chapterUid] = [
+                {"chapterUid": chapterUid, "abstract": abstract, "content": content, "createTime": createTime,
+                 "range": range}]
+        else:
+            get_review_list_my[chapterUid].append(
+                {"chapterUid": chapterUid, "abstract": abstract, "content": content, "createTime": createTime,
+                 "range": range})
+
+    for key, value in get_chapter_info.items():
+        if key == 1000000:
+            continue
+        markText = get_bookmark_list_my.get(key, [])
+        abstract = get_review_list_my.get(key, [])
+        value["markText"] = markText
+        value["abstract"] = abstract
+
+    return get_chapter_info
+
 
 if __name__ == "__main__":
     main()
