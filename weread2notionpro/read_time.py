@@ -82,6 +82,10 @@ HEATMAP_GUIDE = "https://mp.weixin.qq.com/s?__biz=MzI1OTcxOTI4NA==&mid=224748414
 notion_helper = NotionHelper()
 weread_api = WeReadApi()
 def main():
+
+
+
+    # 获取文件，如果热力图存在，则将静态图片发送到第三方服务器，生成交互式热力图
     image_file = get_file()
     if image_file:
         image_url = f"https://raw.githubusercontent.com/{os.getenv('REPOSITORY')}/{os.getenv('REF').split('/')[-1]}/OUT_FOLDER/{image_file}"
@@ -94,7 +98,10 @@ def main():
             print(f"更新热力图失败，没有添加热力图占位。具体参考：{HEATMAP_GUIDE}")
     else:
         print(f"更新热力图失败，没有生成热力图。具体参考：{HEATMAP_GUIDE}")
+
+    # 这个函数实际上是使用了WEREAD_HISTORY_URL这个接口，但不知道这个接口返回了什么样的json数据
     api_data = weread_api.get_api_data()
+
     readTimes = {int(key): value for key, value in api_data.get("readTimes").items()}
     now = pendulum.now("Asia/Shanghai").start_of("day")
     today_timestamp = now.int_timestamp
