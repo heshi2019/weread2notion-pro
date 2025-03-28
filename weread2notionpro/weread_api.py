@@ -1,12 +1,11 @@
 import hashlib
 import json
-import os
 import re
 
 import requests
 from requests.utils import cookiejar_from_dict
 from retrying import retry
-from urllib.parse import quote
+
 
 WEREAD_URL = "https://weread.qq.com/"
 WEREAD_NOTEBOOKS_URL = "https://i.weread.qq.com/user/notebooks"
