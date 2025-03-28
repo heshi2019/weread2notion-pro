@@ -1,31 +1,28 @@
----
-2024.11.22
-该项目暂停使用，目前项目中的热力图是通过将数据发送到原博主的服务器https://heatmap.malinkang.com/  进行渲染，目前不清楚数据泄露风险
+# 微信读书数据导出
 
-具体代码查看read_time.py  88行
+本项目原作者[malinkang](https://github.com/malinkang/)，通过工作流和定时任务将微信读书的数据同步到notion
 
----
+本项目将原来代码简化，只保留与微信读书的数据交互部分
+- 将导出为一个josn文件，目前不做任何处理
+考虑后续将json文件持久化到mysql中，当然不会只有微信读书，也不会只是存入数据库
+
+最后要实现的效果是如项目[QZoneExport](https://github.com/ShunCai/QZoneExport)所示
+执行后会生成一个打包好的前端文件夹，可点击index.html直接打开
+
+最后数据会涵盖包括
+1.微信读书中已读数据以及相关划线笔记，章节
+2.知乎我的收藏、回答
+3.豆瓣已标记电影
+4.机核收藏和电台信息
+
+不知道能不能实现
+5.小米手环中的个人健康数据
 
 
-# 将微信读书划线和笔记同步到Notion
 
-
-本项目通过Github Action每天定时同步微信读书划线到Notion。
-
-本项目原作者[malinkang](https://github.com/malinkang/)，感谢大佬的开源项目
-
-
-步骤还是一样，详情请看douban2notion
-
-本次要设置的变量如下所示：
+要设置的仓库密钥如下：
 
 WEREAD_COOKIE - 网页打开微信读书，登录自己的账号后找到 weread.qq.com 的请求，将cook粘出来
-
-NOTION_TOKEN
-
-NOTION_PAGE
-
-这两个变量用这个链接获取[授权notion微信读书模板链接](https://api.notion.com/v1/oauth/authorize?client_id=f86ce456-f9cb-4cd5-8e4b-07bd9e18a8f8&response_type=code&owner=user&redirect_uri=https%3A%2F%2Fnotion-auth.malinkang.com%2Fweread2notionpro-oauth-callback)
 
 
 
