@@ -102,6 +102,7 @@ def main():
     # 这个函数实际上是使用了WEREAD_HISTORY_URL这个接口，但不知道这个接口返回了什么样的json数据
     api_data = weread_api.get_api_data()
 
+
     readTimes = {int(key): value for key, value in api_data.get("readTimes").items()}
     now = pendulum.now("Asia/Shanghai").start_of("day")
     today_timestamp = now.int_timestamp
