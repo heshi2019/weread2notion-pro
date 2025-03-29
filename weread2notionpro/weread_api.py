@@ -1,7 +1,7 @@
 import hashlib
 import json
 import re
-
+import os
 import requests
 from requests.utils import cookiejar_from_dict
 from retrying import retry
@@ -27,9 +27,7 @@ class WeReadApi:
 
 
     def get_cookie(self):
-       # cookie = os.getenv("WEREAD_COOKIE")
-        #微信读书的cook应该是填入仓库密钥，直接写在代码里有点冒险
-        cookie = 'RK=P+vFhO93N/; ptcz=04e33ad9ae9d660ec904fba39c876f6316f99f0e75afeee8c3441a380cd7644d; _clck=19yqdpq|1|fsn|0; wr_fp=1021737830; wr_vid=386501755; wr_rt=web%404ZqgAY0qXVQvEwRs7HV_AL; wr_localvid=fe432fd0817098c7bfe4a6a; wr_name=%E8%B0%A2%E8%BD%B2; wr_avatar=https%3A%2F%2Fthirdwx.qlogo.cn%2Fmmopen%2Fvi_32%2Fs6nAada4KV5F4DZOxlTaNbXcDoSic4lJqeUVshmotzN4trgib6NAib8svxwqINwe0GJfUhurUiaAuWMokDsdYjMg2Q%2F132; wr_gender=1; wr_pf=NaN; eas_sid=y1u7P3x7A7O9t807S1q9x9H841; _uetvid=05ca5b20db0211ef8c15bfccdd63cbb3; wr_skey=7AYFxLwI'
+        cookie = os.getenv("WEREAD_COOKIE")
 
         if not cookie or not cookie.strip():
             raise Exception("没有找到cookie，请按照文档填写cookie")
