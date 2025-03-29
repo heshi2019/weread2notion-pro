@@ -1,9 +1,17 @@
+import json
+
 import pendulum
 
 from weread2notionpro.weread_api import WeReadApi
 
+# 所有数据信息，全局变量
+book_message = None
 
 def main():
+    # 清空
+    global book_message
+    book_message = {}
+
     we_read_api = WeReadApi()
 
     # 这个函数实际上是使用了WEREAD_HISTORY_URL这个接口，每日阅读历史，数据暂不处理
@@ -24,8 +32,9 @@ def main():
 
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
-            if "莫斯科绅士（英剧同名原著小说）" not in title:
+            if "夜晚的潜水艇" not in title:
                 continue  # 跳过不符合条件的书籍
+
             # 书籍id
             bookId = book.get("bookId")
             # 书名
@@ -43,11 +52,14 @@ def main():
             classification1 = None
             classification2 = None
             classification3 = None
-            if book.get("categories"):
-                classification1 = book.get("categories").get("title")
 
-            classification2 = book.get("book").get("categories")[0].get("title")
-            classification3 = get_bookinfo.get("category")
+            print(f"{book}")
+
+            if book.get("categories"):
+                classification1 = book.get("categories",{}).get("title",{})
+                classification2 = book.get("book",{}).get("categories",{})[0].get("title",{})
+
+            classification3 = get_bookinfo.get("category",{})
             # 书籍分类
             classification = classification1 or classification2 or classification3
 
@@ -72,21 +84,22 @@ def main():
                 hours = seconds // 3600
                 minutes = (seconds % 3600) // 60
                 seconds = seconds % 60
-            ReadDayTime = f"{hours}:{minutes}:{seconds}"
+                ReadDayTime = f"{hours}:{minutes}:{seconds}"
             # 阅读天数
             ReadDay = readInfo.get("totalReadDay")
             # 开始阅读时间
             StartDay = pendulum.from_timestamp(
-                readInfo.get("readDetail").get("beginReadingDate")).to_datetime_string() if readInfo.get(
-                "readDetail").get("beginReadingDate") else None
+                readInfo.get("readDetail").get("beginReadingDate")).to_datetime_string() \
+                if readInfo.get(
+                "readDetail",{}).get("beginReadingDate",{}) else None
             # 最后阅读时间
             LastDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("lastReadingDate")).to_datetime_string() if readInfo.get(
-                "readDetail").get("lastReadingDate") else None
+                "readDetail",{}).get("lastReadingDate",{}) else None
             # 最晚阅读时间
             LatestDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("deepestNightReadTime")).to_datetime_string() if readInfo.get(
-                "readDetail").get("deepestNightReadTime") else None
+                "readDetail",{}).get("deepestNightReadTime",{}) else None
             # 书籍阅读链接
             url = we_read_api.get_url(bookId)
 
@@ -106,8 +119,13 @@ def main():
             # 章节，划线，笔记信息整合
             MyExtendList=MyExtend(chapter,bookmark_list,reviews)
 
-            print(f"章节，划线，笔记信息整合：{MyExtendList}")
-            print(f"书籍信息：{BookInformation}")
+            # print(f"章节，划线，笔记信息整合：{MyExtendList}")
+            # print(f"书籍信息：{BookInformation}")
+
+            assemble_BookMessage(MyExtendList,BookInformation)
+        print(f"all：{book_message}")
+        with open("weread.json", "w", encoding='utf-8') as f:
+            f.write(json.dumps(assemble_BookMessage, indent=4, ensure_ascii=False))
 
 # 参数信息 1.章节信息；2.划线信息；3.笔记信息
 def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
@@ -200,11 +218,20 @@ def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
             continue
         markText = get_bookmark_list_my.get(key, [])
         abstract = get_review_list_my.get(key, [])
+        #划线
         value["markText"] = markText
+        #笔记
         value["abstract"] = abstract
 
     return get_chapter_info
 
+def assemble_BookMessage(MyExtendList,BookInformation):
+
+    BookInformation['chapter'] = MyExtendList
+    title = BookInformation['title']
+
+    global book_message
+    book_message[title] = BookInformation
 
 if __name__ == "__main__":
     main()
