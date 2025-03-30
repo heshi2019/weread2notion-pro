@@ -32,7 +32,7 @@ def main():
 
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
-            if "夜晚的潜水艇" not in title:
+            if "图书馆" not in title:
                 continue  # 跳过不符合条件的书籍
 
             # 书籍id
@@ -56,10 +56,10 @@ def main():
             print(f"{book}")
 
             if book.get("categories"):
-                classification1 = book.get("categories",{}).get("title",{})
-                classification2 = book.get("book",{}).get("categories",{})[0].get("title",{})
+                classification1 = book.get("categories",None).get("title",None)
+                classification2 = book.get("book",None).get("categories",None)[0].get("title",None)
 
-            classification3 = get_bookinfo.get("category",{})
+            classification3 = get_bookinfo.get("category",None)
             # 书籍分类
             classification = classification1 or classification2 or classification3
 
@@ -73,7 +73,7 @@ def main():
             elif readSign == 1:
                 readSign = "未读"
             else:
-                readSign == "在读"
+                readSign = "在读"
 
             # 阅读进度  百分比
             Progress = readInfo.get("readingProgress")
@@ -91,20 +91,20 @@ def main():
             StartDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("beginReadingDate")).to_datetime_string() \
                 if readInfo.get(
-                "readDetail",{}).get("beginReadingDate",{}) else None
+                "readDetail",None).get("beginReadingDate",None) else None
             # 最后阅读时间
             LastDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("lastReadingDate")).to_datetime_string() if readInfo.get(
-                "readDetail",{}).get("lastReadingDate",{}) else None
+                "readDetail",None).get("lastReadingDate",None) else None
             # 最晚阅读时间
             LatestDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("deepestNightReadTime")).to_datetime_string() if readInfo.get(
-                "readDetail",{}).get("deepestNightReadTime",{}) else None
+                "readDetail",None).get("deepestNightReadTime",None) else None
             # 书籍阅读链接
             url = we_read_api.get_url(bookId)
 
             # 书籍信息整合
-            BookInformation = {"bookId":bookId,"title":title,"classification":classification,"cover":cover,"name":name,
+            BookInformation = {"bookId":bookId,"title":str(title),"classification":classification,"cover":cover,"name":name,
                                "readSign":readSign,"briefIntroduction":briefIntroduction,"Progress":Progress,"ReadDay":ReadDay,
                                "ReadDayTime":ReadDayTime,"StartDay":StartDay,"LastDay":LastDay,"LatestDay":LatestDay,
                                "ReadUrl":url}
@@ -125,7 +125,7 @@ def main():
             assemble_BookMessage(MyExtendList,BookInformation)
         print(f"all：{book_message}")
         with open("weread.json", "w", encoding='utf-8') as f:
-            f.write(json.dumps(assemble_BookMessage, indent=4, ensure_ascii=False))
+            f.write(json.dumps(book_message, indent=4, ensure_ascii=False))
 
 # 参数信息 1.章节信息；2.划线信息；3.笔记信息
 def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
