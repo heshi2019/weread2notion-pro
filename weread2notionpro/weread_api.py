@@ -24,11 +24,12 @@ class WeReadApi:
         self.session = requests.Session()
         self.session.cookies = self.parse_cookie_string()
 
+        # self.session.verify = False  # 禁用SSL验证
+        # requests.packages.urllib3.disable_warnings()  # 禁用SSL警告
 
 
     def get_cookie(self):
         cookie = os.getenv("WEREAD_COOKIE")
-
 
         if not cookie or not cookie.strip():
             raise Exception("没有找到cookie，请按照文档填写cookie")
@@ -58,6 +59,14 @@ class WeReadApi:
             data = r.json()
             books = data.get("books")
             books.sort(key=lambda x: x["sort"])
+
+            os.makedirs("Data_Star", exist_ok=True)
+            output_path = os.path.join("Data_Star", "get_notebooklist.json")
+
+            with open(output_path, "w", encoding='utf-8') as f:
+                f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
+
+
             return books
         else:
             errcode = r.json().get("errcode",0)
@@ -98,8 +107,13 @@ class WeReadApi:
         params = dict(bookId=bookId)
         r = self.session.get(WEREAD_BOOKMARKLIST_URL, params=params)
         if r.ok:
-            with open("bookmark.json", "w",encoding='utf-8') as f:
+
+            os.makedirs("Data_Star", exist_ok=True)
+            output_path = os.path.join("Data_Star", "bookmark.json")
+
+            with open(output_path, "w", encoding='utf-8') as f:
                 f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
+
             bookmarks = r.json().get("updated")
             return bookmarks
         else:
