@@ -61,7 +61,7 @@ class WeReadApi:
             books.sort(key=lambda x: x["sort"])
 
             os.makedirs("Data_Star", exist_ok=True)
-            output_path = os.path.join("Data_Star", "get_notebooklist.json")
+            output_path = os.path.join("Data_Star", "Weread_get_notebooklist.json")
 
             with open(output_path, "w", encoding='utf-8') as f:
                 f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
@@ -109,7 +109,7 @@ class WeReadApi:
         if r.ok:
 
             os.makedirs("Data_Star", exist_ok=True)
-            output_path = os.path.join("Data_Star", "bookmark.json")
+            output_path = os.path.join("Data_Star", "Weread_bookmark.json")
 
             with open(output_path, "w", encoding='utf-8') as f:
                 f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
