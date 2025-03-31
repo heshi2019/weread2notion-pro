@@ -1,4 +1,5 @@
 import json
+import os
 
 import pendulum
 
@@ -124,8 +125,13 @@ def main():
 
             assemble_BookMessage(MyExtendList,BookInformation)
         print(f"all：{book_message}")
-        with open("weread.json", "w", encoding='utf-8') as f:
+
+        os.makedirs("Data_End", exist_ok=True)
+        output_path = os.path.join("Data_End", "weread.json")
+
+        with open(output_path, "w", encoding='utf-8') as f:
             f.write(json.dumps(book_message, indent=4, ensure_ascii=False))
+
 
 # 参数信息 1.章节信息；2.划线信息；3.笔记信息
 def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
