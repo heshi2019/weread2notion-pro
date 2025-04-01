@@ -23,8 +23,8 @@ def main():
 
     bookIdStr = ""
     BookList = {}
-    if books!= None:
 
+    if books!= None:
         for index, book in enumerate(books):
 
             # 书名
@@ -33,14 +33,11 @@ def main():
             # if "刺杀骑士团长" not in title:
             #     continue  # 跳过不符合条件的书籍
 
-
             # 书籍id
             bookId = book.get("book").get("bookId")
             bookIdStr = bookIdStr + str(bookId) + ","
 
-
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
-
 
             # 简介
             description = book.get("book").get("description")
@@ -72,110 +69,97 @@ def main():
                                }
             BookList[title] = BookInformation
 
-
-
+    # 获取对应数据id章节
     Chapter = du_api.get_Chapter(bookIdStr)
+    # 获取划线信息
+    Annotations = du_api.get_Annotations()
+    # 整合书籍，划线，章节信息
+    temp = MyExtend(BookList,Annotations, Chapter)
 
-    BookAnnotations = du_api.get_Annotations()
-
-    temp = MyExtend(BookList,BookAnnotations, Chapter)
-
-    # print(f"这是整合后的信息{temp}")
-
-
+    # 保存数据
     os.makedirs("Data_End", exist_ok=True)
     output_path = os.path.join("Data_End", "du.json")
 
     with open(output_path, "w", encoding='utf-8') as f:
         f.write(json.dumps(temp, indent=4, ensure_ascii=False))
 
-def MyExtend(BookList,BookAnnotations, Chapter):
+def MyExtend(BookList,Annotations, Chapter):
 
     # 章节信息
-    BookListAll = {}
+    BookCh = {}
     for mes in Chapter.get("catalogs"):
+        
         num = 1.0
+        # 一本书的章节
         BookList_OneBooke = {}
-        BookListAll_temp = {}
+        # 全章节信息
+        BookCh_temp = {}
 
         for mes_1 in mes.get("catalog"):
             if mes_1.get("children") == []:
                 BookList_OneBooke[mes_1.get("articleId")] = {"title":mes_1.get("title")}
 
-                BookListAll_temp[num] = mes_1.get("title")
+                BookCh_temp[num] = mes_1.get("title")
                 num = num + 1
 
             elif mes_1.get("children") != []:
+                # 这里的小节，0.01则每章节最大为99小节，且最后写入时需要指定保留两位小数，否则会导致会导致数字自动扩展为10位左右
                 numF = 0.01
-                BookListAll_temp[num] = mes_1.get("title")
+                BookCh_temp[num] = mes_1.get("title")
 
                 for mes_2 in mes_1.get("children"):
                     BookList_OneBooke[mes_2.get("articleId")] = {"title":mes_2.get("title")}
-                    BookListAll_temp[round(num + numF,2)] = mes_2.get("title")
+                    BookCh_temp[round(num + numF,2)] = mes_2.get("title")
                     numF = numF + 0.01
                 num = num + 1
-        BookList_OneBooke[1000000] = BookListAll_temp
-        BookListAll[mes.get("bookId")] = BookList_OneBooke
-    print(f"这是整合后的章节信息{BookListAll}")
+                
+        BookList_OneBooke[1000000] = BookCh_temp
+        BookCh[mes.get("bookId")] = BookList_OneBooke
 
     # 划线信息
-    BookListAnnotations = {}
+    BookAn = {}
 
-    for BookInformation in BookAnnotations.get("updated"):
-
+    for BookInformation in Annotations.get("updated"):
+        # 这两个数字需要转换为字符串，否则再次提取时会报错
         bookId = str(BookInformation.get("bookNote").get("bookId"))
-        # if bookId != "5180007350420015658":
-        #     continue  # 跳过不符合条件的书籍
-        print(f"这是测试数据：{BookInformation}")
+        # 章节id
         articleId = str(BookInformation.get("bookNote").get("articleId"))
-
-
-        if BookListAnnotations.get(bookId,{}).get(articleId,{}) != {}:
-            temp = BookListAnnotations[bookId].get(articleId)
+        
+        # 如果temp不初始化，会报错
+        if BookAn.get(bookId,{}).get(articleId,{}) != {}:
+            temp = BookAn[bookId].get(articleId)
         else:
             temp = []
-
+        # 划线
         markText = BookInformation.get("bookNote").get("markText")
+        # 笔记
         remark = BookInformation.get("bookNote").get("remark")
+        # 创建时间
         createTime = BookInformation.get("bookNote").get("createTime")
+        # 更新时间
         uploadTime = BookInformation.get("bookNote").get("uploadTime")
 
-        if remark == "" :
-            temp.append({"markText":markText,"createTime":str(createTime),"uploadTime":str(uploadTime)})
-
-        else :
-            temp.append({"markText":markText,"remark":remark,"createTime":str(createTime),"uploadTime":str(uploadTime)})
-
-        if BookListAnnotations.get(bookId, {}) == {}:
-            BookListAnnotations[bookId]= {articleId: temp}
+        #拼接
+        temp.append({"markText":markText,"remark":remark,"createTime":str(createTime),"uploadTime":str(uploadTime)})
+        
+        # 还是BookAn需要初始化，否则报错。并且分不同的赋值方式，否则会被覆盖
+        if BookAn.get(bookId, {}) == {}:
+            BookAn[bookId]= {articleId: temp}
         else:
-            BookListAnnotations[bookId][articleId] = temp
-
-    print(f"这是整合后的划线信息{BookListAnnotations}")
-
-    for title in BookListAll:
-        for key,value in BookListAll[title].items():
+            BookAn[bookId][articleId] = temp
+            
+    # 章节和笔记整合
+    for title in BookCh:
+        for key,value in BookCh[title].items():
             if key == 1000000:
                 continue
-            print(f"测试2：{BookListAnnotations.get(str(title),{})}")
-            print(f"测试2：{BookListAnnotations.get(str(title),{}).get(str(key),None)}")
-            BookListAll[title][key]["markText"] = BookListAnnotations.get(str(title),{}).get(str(key),None)
-
-    print(f"这是整合1后的划线信息{BookListAll}")
-
+            BookCh[title][key]["markText"] = BookAn.get(str(title),{}).get(str(key),None)
+    # 书籍和章节，笔记整合
     for title, BookInformation in BookList.items():
         print(title, BookInformation)
-        BookList[title]["chapter"] = BookListAll.get(BookInformation.get("bookId"))
+        BookList[title]["chapter"] = BookCh.get(BookInformation.get("bookId"))
 
     return BookList
-def assemble_BookMessage(MyExtendList,BookInformation):
-
-    BookInformation['chapter'] = MyExtendList
-    title = BookInformation['title']
-
-    global book_message
-    book_message[title] = BookInformation
-
 
 if __name__ == "__main__":
     main()
