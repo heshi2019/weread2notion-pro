@@ -44,6 +44,8 @@ def main():
             name = book.get("book").get("author")
             # 封面
             cover = book.get("book").get("cover")
+            # isbn
+            isbn = book.get("isbn")
 
             # 书籍信息
             get_bookinfo = we_read_api.get_bookinfo(bookId)
@@ -106,9 +108,9 @@ def main():
 
             # 书籍信息整合
             BookInformation = {"bookId":bookId,"title":str(title),"classification":classification,"cover":cover,"name":name,
-                               "readSign":readSign,"briefIntroduction":briefIntroduction,"Progress":Progress,"ReadDay":ReadDay,
-                               "ReadDayTime":ReadDayTime,"StartDay":StartDay,"LastDay":LastDay,"LatestDay":LatestDay,
-                               "ReadUrl":url}
+                               "isbn":isbn,"readSign":readSign,"briefIntroduction":briefIntroduction,"Progress":Progress,
+                               "ReadDay":ReadDay,"ReadDayTime":ReadDayTime,"StartDay":StartDay,"LastDay":LastDay,
+                               "LatestDay":LatestDay,"ReadUrl":url}
 
             # 章节信息
             chapter = we_read_api.get_chapter_info(bookId)
