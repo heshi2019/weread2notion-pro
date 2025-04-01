@@ -33,7 +33,7 @@ def main():
 
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
-            if "图书馆" not in title:
+            if "莫斯科绅士" not in title:
                 continue  # 跳过不符合条件的书籍
 
             # 书籍id

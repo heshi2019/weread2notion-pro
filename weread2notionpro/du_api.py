@@ -53,7 +53,7 @@ class DUApi:
     def get_book_list(self):
         self.session.get(DU_URL)
         book_dataAnnotations = {}
-        for i in range(1, 2):
+        for i in range(1, 40):
             params = dict(
                 time=0,
                 pageSize=100,
@@ -69,7 +69,7 @@ class DUApi:
                         book_dataAnnotations.update(r.json())
                     else:
 
-                        book_dataAnnotations["bookWrappers"] = book_dataAnnotations.get("bookWrappers")+r.json().get("updated")
+                        book_dataAnnotations["bookWrappers"] = book_dataAnnotations.get("bookWrappers")+r.json().get("bookWrappers")
                 else:
                     errcode = r.json().get("errcode", 0)
                     self.handle_errcode(errcode)
@@ -90,7 +90,7 @@ class DUApi:
         self.session.get(DU_URL)
         book_dataAnnotations = {}
 
-        for i in range(1, 2):
+        for i in range(1, 40):
             params = dict(
                 time=0,
                 pageSize=100,

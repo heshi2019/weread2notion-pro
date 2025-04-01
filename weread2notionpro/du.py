@@ -3,6 +3,7 @@ import os
 
 import pendulum
 
+from weread2notionpro import du_api
 from weread2notionpro.du_api import DUApi
 
 # 所有数据信息，全局变量
@@ -28,7 +29,9 @@ def main():
 
             # 书名
             title = book.get("book").get("title")
-
+            print(title)
+            # if "刺杀骑士团长" not in title:
+            #     continue  # 跳过不符合条件的书籍
 
 
             # 书籍id
@@ -75,45 +78,96 @@ def main():
 
     BookAnnotations = du_api.get_Annotations()
 
-    MyExtend(BookList,BookAnnotations, Chapter)
-    # 遍历书籍
+    temp = MyExtend(BookList,BookAnnotations, Chapter)
+
+    # print(f"这是整合后的信息{temp}")
 
 
-    # os.makedirs("Data_End", exist_ok=True)
-    # output_path = os.path.join("Data_End", "du.json")
-    #
-    # with open(output_path, "w", encoding='utf-8') as f:
-    #     f.write(json.dumps(book_message, indent=4, ensure_ascii=False))
+    os.makedirs("Data_End", exist_ok=True)
+    output_path = os.path.join("Data_End", "du.json")
+
+    with open(output_path, "w", encoding='utf-8') as f:
+        f.write(json.dumps(temp, indent=4, ensure_ascii=False))
 
 def MyExtend(BookList,BookAnnotations, Chapter):
-    for title, BookInformation in BookList.items():
-        # 章节信息
-        pass
-    # print(f"这是章节信息{Chapter}")
-    # print(f"这是数据信息{BookList}")
-    # print(f"这是划线信息{BookAnnotations}")
 
+    # 章节信息
     BookListAll = {}
     for mes in Chapter.get("catalogs"):
-        idNUmer = 1
+        num = 1.0
+        BookList_OneBooke = {}
+        BookListAll_temp = {}
+
         for mes_1 in mes.get("catalog"):
-            if mes.get("children") == []:
-                BookListAll[mes.get("bookId")][mes_1.get("articleId")]={"articleId":mes_1.get("articleId"),"title":mes_1.get("title")}
-                BookListAll[mes.get("bookId")]["1000000"].append({idNUmer:mes_1.get("title")})
-                idNUmer = idNUmer + 1
-            elif mes.get("children") != []:
-                idNUmerF = 0.1
-                BookListAll[mes.get("bookId")]["1000000"].append({idNUmer: mes_1.get("title")})
-                for mes_2 in mes.get("children"):
-                    BookListAll[mes.get("bookId")][mes_2.get("articleId")]={"articleId":mes_2.get("articleId"),"title":mes_2.get("title")}
-                    BookListAll[mes.get("bookId")]["1000000"].append({idNUmer+idNUmerF: mes_2.get("title")})
-                    idNUmerF = idNUmerF + 0.1
-    print(BookListAll)
+            if mes_1.get("children") == []:
+                BookList_OneBooke[mes_1.get("articleId")] = {"title":mes_1.get("title")}
+
+                BookListAll_temp[num] = mes_1.get("title")
+                num = num + 1
+
+            elif mes_1.get("children") != []:
+                numF = 0.01
+                BookListAll_temp[num] = mes_1.get("title")
+
+                for mes_2 in mes_1.get("children"):
+                    BookList_OneBooke[mes_2.get("articleId")] = {"title":mes_2.get("title")}
+                    BookListAll_temp[round(num + numF,2)] = mes_2.get("title")
+                    numF = numF + 0.01
+                num = num + 1
+        BookList_OneBooke[1000000] = BookListAll_temp
+        BookListAll[mes.get("bookId")] = BookList_OneBooke
+    print(f"这是整合后的章节信息{BookListAll}")
+
+    # 划线信息
+    BookListAnnotations = {}
+
+    for BookInformation in BookAnnotations.get("updated"):
+
+        bookId = str(BookInformation.get("bookNote").get("bookId"))
+        # if bookId != "5180007350420015658":
+        #     continue  # 跳过不符合条件的书籍
+        print(f"这是测试数据：{BookInformation}")
+        articleId = str(BookInformation.get("bookNote").get("articleId"))
 
 
+        if BookListAnnotations.get(bookId,{}).get(articleId,{}) != {}:
+            temp = BookListAnnotations[bookId].get(articleId)
+        else:
+            temp = []
 
+        markText = BookInformation.get("bookNote").get("markText")
+        remark = BookInformation.get("bookNote").get("remark")
+        createTime = BookInformation.get("bookNote").get("createTime")
+        uploadTime = BookInformation.get("bookNote").get("uploadTime")
 
+        if remark == "" :
+            temp.append({"markText":markText,"createTime":str(createTime),"uploadTime":str(uploadTime)})
 
+        else :
+            temp.append({"markText":markText,"remark":remark,"createTime":str(createTime),"uploadTime":str(uploadTime)})
+
+        if BookListAnnotations.get(bookId, {}) == {}:
+            BookListAnnotations[bookId]= {articleId: temp}
+        else:
+            BookListAnnotations[bookId][articleId] = temp
+
+    print(f"这是整合后的划线信息{BookListAnnotations}")
+
+    for title in BookListAll:
+        for key,value in BookListAll[title].items():
+            if key == 1000000:
+                continue
+            print(f"测试2：{BookListAnnotations.get(str(title),{})}")
+            print(f"测试2：{BookListAnnotations.get(str(title),{}).get(str(key),None)}")
+            BookListAll[title][key]["markText"] = BookListAnnotations.get(str(title),{}).get(str(key),None)
+
+    print(f"这是整合1后的划线信息{BookListAll}")
+
+    for title, BookInformation in BookList.items():
+        print(title, BookInformation)
+        BookList[title]["chapter"] = BookListAll.get(BookInformation.get("bookId"))
+
+    return BookList
 def assemble_BookMessage(MyExtendList,BookInformation):
 
     BookInformation['chapter'] = MyExtendList
