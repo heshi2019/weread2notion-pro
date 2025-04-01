@@ -26,11 +26,15 @@ def main():
 
         for index, book in enumerate(books):
 
-            # 书籍id
-            bookId = book.get("book").get("bookId")
-            bookIdStr = bookIdStr + bookId + ","
             # 书名
             title = book.get("book").get("title")
+
+
+
+            # 书籍id
+            bookId = book.get("book").get("bookId")
+            bookIdStr = bookIdStr + str(bookId) + ","
+
 
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
@@ -71,6 +75,7 @@ def main():
 
     BookAnnotations = du_api.get_Annotations()
 
+    MyExtend(BookList,BookAnnotations, Chapter)
     # 遍历书籍
 
 
@@ -84,22 +89,27 @@ def MyExtend(BookList,BookAnnotations, Chapter):
     for title, BookInformation in BookList.items():
         # 章节信息
         pass
+    # print(f"这是章节信息{Chapter}")
+    # print(f"这是数据信息{BookList}")
+    # print(f"这是划线信息{BookAnnotations}")
 
     BookListAll = {}
-    for index,mes in Chapter.get("catalogs"):
+    for mes in Chapter.get("catalogs"):
         idNUmer = 1
-        for index,mes_1 in mes.get("catalog"):
+        for mes_1 in mes.get("catalog"):
             if mes.get("children") == []:
                 BookListAll[mes.get("bookId")][mes_1.get("articleId")]={"articleId":mes_1.get("articleId"),"title":mes_1.get("title")}
                 BookListAll[mes.get("bookId")]["1000000"].append({idNUmer:mes_1.get("title")})
                 idNUmer = idNUmer + 1
             elif mes.get("children") != []:
                 idNUmerF = 0.1
-                for index,mes_2 in mes.get("children"):
-                    BookListAll[mes.get("bookId")][mes_1.get("articleId")]={"articleId":mes_1.get("articleId"),"title":mes_1.get("title")}
-                    BookListAll[mes.get("bookId")]["1000000"].append({idNUmer: mes_1.get("title")})
+                BookListAll[mes.get("bookId")]["1000000"].append({idNUmer: mes_1.get("title")})
+                for mes_2 in mes.get("children"):
+                    BookListAll[mes.get("bookId")][mes_2.get("articleId")]={"articleId":mes_2.get("articleId"),"title":mes_2.get("title")}
+                    BookListAll[mes.get("bookId")]["1000000"].append({idNUmer+idNUmerF: mes_2.get("title")})
+                    idNUmerF = idNUmerF + 0.1
+    print(BookListAll)
 
-    pass
 
 
 
