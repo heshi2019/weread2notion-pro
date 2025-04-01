@@ -144,4 +144,4 @@ class DUApi:
             self.handle_errcode(errcode)
             raise Exception(f"获取章节信息错误，错误如下： {r.text}")
 
-        return r.json()[1].get("body")
+        return json.loads(r.json()[0].get("body"))
