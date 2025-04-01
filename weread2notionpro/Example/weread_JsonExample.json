@@ -5,6 +5,7 @@
     "classification": "分类",
     "cover": "封面连接",
     "name": "作者",
+    "isbn": "ISBN",
     "readSign": "阅读状态",
     "briefIntroduction":"简介",
     "Progress": "阅读进度，数字表示百分比",
@@ -17,20 +18,9 @@
     "chapter": {
       "章节id": {
         "chapterUid": "章节id",
-        "chapterIdx": 4,
-        "updateTime": 0,
-        "readAhead": 0,
-        "tar": "",
+        "updateTime": "更新时间，为unix时间戳，秒",
         "title": "章节名称",
-        "wordCount": 8054,
-        "price": 0,
-        "paid": 0,
-        "isMPChapter": 0,
-        "level": 1,
-        "files": [
-          "text/part0004.html",
-          "text/part0005.html"
-        ],
+        "wordCount": "字数",
         "markText": [
 		  {
 			    "createTime": "创建时间，为unix时间戳",

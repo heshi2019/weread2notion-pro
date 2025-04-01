@@ -140,17 +140,6 @@ class WeReadApi:
             self.handle_errcode(errcode)
             raise Exception(f"get {bookId} review list failed {r.text}")
 
-
-
-
-
-
-
-
-
-
-
-
     def get_bookshelf(self):
         self.session.get(WEREAD_URL)
         r = self.session.get(

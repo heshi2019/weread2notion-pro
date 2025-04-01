@@ -52,37 +52,59 @@ class DUApi:
     @retry(stop_max_attempt_number=3, wait_fixed=5000)
     def get_book_list(self):
         self.session.get(DU_URL)
-        book_dataAnnotations = {}
-        for i in range(1, 40):
-            params = dict(
-                time=0,
-                pageSize=100,
-                page=i,
-            )
+        # 这个请求很奇怪，他有一个page参数，但不加也可以，如果加了，按每页100条来请求，后续请求的如第十页的数据，
+        # 他会重复返回之前的数据，可使用remove_duplicate_books函数去重
 
-            r = self.session.get(DU_BOOKLIST, params=params)
-            if r.json().get("bookWrappers") == [] :
-                break
-            else:
-                if r.ok:
-                    if i == 1:
-                        book_dataAnnotations.update(r.json())
-                    else:
+        # params = dict(
+        #     time=0,
+        #     pageSize=1000,
+        #     page=1
+        # )
 
-                        book_dataAnnotations["bookWrappers"] = book_dataAnnotations.get("bookWrappers")+r.json().get("bookWrappers")
-                else:
-                    errcode = r.json().get("errcode", 0)
-                    self.handle_errcode(errcode)
-                    raise Exception(f"获取笔记划线列表错误，错误如下： {r.text}")
+        # for i in range(1, 40):
+        #     params = dict(
+        #         time=0,
+        #         pageSize=100,
+        #         page=i,
+        #     )
+        #
+        #     r = self.session.get(DU_BOOKLIST, params=params)
+        #     if r.json().get("bookWrappers") == []:
+        #         break
+        #     else:
+        #         if r.ok:
+        #             if i == 1:
+        #                 book_dataAnnotations.update(r.json())
+        #             else:
+        #
+        #                 book_dataAnnotations["bookWrappers"] = book_dataAnnotations.get("bookWrappers") + r.json().get(
+        #                     "bookWrappers")
+        #         else:
+        #             errcode = r.json().get("errcode", 0)
+        #             self.handle_errcode(errcode)
+        #             raise Exception(f"获取笔记划线列表错误，错误如下： {r.text}")
 
+        params = dict(
+            time=0,
+            pageSize=1000,
+        )
+
+        r = self.session.get(DU_BOOKLIST, params=params)
+
+        if r.ok:
+            r.json()
+        else:
+            errcode = r.json().get("errcode", 0)
+            self.handle_errcode(errcode)
+            raise Exception(f"获取笔记划线列表错误，错误如下： {r.text}")
 
         os.makedirs("Data_Star", exist_ok=True)
         output_path = os.path.join("Data_Star", "Du_bookList.json")
 
         with open(output_path, "w", encoding='utf-8') as f:
-            f.write(json.dumps(book_dataAnnotations, indent=4, ensure_ascii=False))
+            f.write(json.dumps(r.json(), indent=4, ensure_ascii=False))
 
-        return book_dataAnnotations
+        return r.json()
 
     # 获取某本书的笔记
     @retry(stop_max_attempt_number=3, wait_fixed=5000)
@@ -145,3 +167,16 @@ class DUApi:
             raise Exception(f"获取章节信息错误，错误如下： {r.text}")
 
         return json.loads(r.json()[0].get("body"))
+
+
+# list中dict去重
+def remove_duplicate_books(data):
+    unique_book_ids = set()
+    new_book_wrappers = []
+    for book_wrapper in data.get('bookWrappers', []):
+        book_id = book_wrapper['book']['bookId']
+        if book_id not in unique_book_ids:
+            unique_book_ids.add(book_id)
+            new_book_wrappers.append(book_wrapper)
+    data['bookWrappers'] = new_book_wrappers
+    return data

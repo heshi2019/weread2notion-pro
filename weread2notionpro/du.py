@@ -6,17 +6,11 @@ import pendulum
 from weread2notionpro import du_api
 from weread2notionpro.du_api import DUApi
 
-# 所有数据信息，全局变量
-book_message = None
 
 def main():
-    # 清空
-    global book_message
-    book_message = {}
-
     du_api = DUApi()
 
-    #微信读书API，获取基本数据
+    #网易蜗牛读书API，获取基本数据
     Books = du_api.get_book_list()
 
     books = Books.get("bookWrappers")
@@ -29,7 +23,6 @@ def main():
 
             # 书名
             title = book.get("book").get("title")
-            print(title)
             # if "刺杀骑士团长" not in title:
             #     continue  # 跳过不符合条件的书籍
 
@@ -156,7 +149,6 @@ def MyExtend(BookList,Annotations, Chapter):
             BookCh[title][key]["markText"] = BookAn.get(str(title),{}).get(str(key),None)
     # 书籍和章节，笔记整合
     for title, BookInformation in BookList.items():
-        print(title, BookInformation)
         BookList[title]["chapter"] = BookCh.get(BookInformation.get("bookId"))
 
     return BookList

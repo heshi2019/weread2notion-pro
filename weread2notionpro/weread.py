@@ -33,9 +33,6 @@ def main():
 
             print(f"正在同步《{title}》,一共{len(books)}本，当前是第{index + 1}本。")
 
-            if "莫斯科绅士" not in title:
-                continue  # 跳过不符合条件的书籍
-
             # 书籍id
             bookId = book.get("bookId")
             # 书名
@@ -44,8 +41,7 @@ def main():
             name = book.get("book").get("author")
             # 封面
             cover = book.get("book").get("cover")
-            # isbn
-            isbn = book.get("isbn")
+
 
             # 书籍信息
             get_bookinfo = we_read_api.get_bookinfo(bookId)
@@ -59,8 +55,8 @@ def main():
             print(f"{book}")
 
             if book.get("categories"):
-                classification1 = book.get("categories",None).get("title",None)
-                classification2 = book.get("book",None).get("categories",None)[0].get("title",None)
+                classification1 = book.get("categories", {}).get("title",None)
+                classification2 = book.get("book", {}).get("categories",[])[0].get("title",None)
 
             classification3 = get_bookinfo.get("category",None)
             # 书籍分类
@@ -78,6 +74,9 @@ def main():
             else:
                 readSign = "在读"
 
+            # isbn
+            isbn = readInfo.get("isbn")
+
             # 阅读进度  百分比
             Progress = readInfo.get("readingProgress")
             # 阅读时间 格式时分秒
@@ -94,15 +93,15 @@ def main():
             StartDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("beginReadingDate")).to_datetime_string() \
                 if readInfo.get(
-                "readDetail",None).get("beginReadingDate",None) else None
+                "readDetail", {}).get("beginReadingDate",None) else None
             # 最后阅读时间
             LastDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("lastReadingDate")).to_datetime_string() if readInfo.get(
-                "readDetail",None).get("lastReadingDate",None) else None
+                "readDetail", {}).get("lastReadingDate",None) else None
             # 最晚阅读时间
             LatestDay = pendulum.from_timestamp(
                 readInfo.get("readDetail").get("deepestNightReadTime")).to_datetime_string() if readInfo.get(
-                "readDetail",None).get("deepestNightReadTime",None) else None
+                "readDetail", {}).get("deepestNightReadTime",None) else None
             # 书籍阅读链接
             url = we_read_api.get_url(bookId)
 
@@ -157,6 +156,14 @@ def MyExtend(get_chapter_info, get_bookmark_list, get_review_list):
 
     # 删除点评
     del get_chapter_info[1000000]
+
+    for key, value in get_chapter_info.items():
+        get_chapter_info[key] = { "chapterUid": value["chapterUid"],
+                                  "updateTime": value["updateTime"],
+                                  "title": value["title"],
+                                  "wordCount": value["wordCount"]}
+
+
 
     for key, value in get_chapter_info.items():
 
