@@ -1,8 +1,6 @@
 import json
 import os
-
 import pendulum
-
 from weread2notionpro.weread_api import WeReadApi
 
 # 所有数据信息，全局变量

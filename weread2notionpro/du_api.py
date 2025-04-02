@@ -19,8 +19,8 @@ class DUApi:
 
         self.session = requests.Session()
         self.session.cookies = self.parse_cookie_string()
-        self.session.verify = False  # 禁用SSL验证
-        requests.packages.urllib3.disable_warnings()  # 禁用SSL警告
+        # self.session.verify = False  # 禁用SSL验证
+        # requests.packages.urllib3.disable_warnings()  # 禁用SSL警告
 
     def get_cookie(self):
         cookie = os.getenv("DU_COOKIE")
@@ -46,14 +46,14 @@ class DUApi:
 
     def handle_errcode(self, errcode):
         if (errcode == -2012 or errcode == -2010):
-            print(f"::error::Cookie过期了，请参考文档重新设置。https://mp.weixin.qq.com/s/B_mqLUZv7M1rmXRsMlBf7A")
+            print(f"::error::Cookie过期了。")
 
     # 获取笔记列表
     @retry(stop_max_attempt_number=3, wait_fixed=5000)
     def get_book_list(self):
         self.session.get(DU_URL)
         # 这个请求很奇怪，他有一个page参数，但不加也可以，如果加了，按每页100条来请求，后续请求的如第十页的数据，
-        # 他会重复返回之前的数据，可使用remove_duplicate_books函数去重
+        # 他会重复返回之前的数据,并不会返回空序列，可使用remove_duplicate_books函数去重
 
         # params = dict(
         #     time=0,

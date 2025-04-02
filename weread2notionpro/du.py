@@ -1,8 +1,6 @@
 import json
 import os
-
 import pendulum
-
 from weread2notionpro import du_api
 from weread2notionpro.du_api import DUApi
 

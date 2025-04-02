@@ -1,0 +1,27 @@
+[
+    {
+        "uuid": "db390951-de48-46e7-be5e-3187a28f7bc7",
+        "userId": 0,
+        "lastUpdate": "最后查看本笔记时间，unix时间戳，毫秒",
+        "status": "U，丢弃",
+        "createTime":"创建时间，unix时间戳，毫秒",
+        "modifyTime": "最后修改时间，unix时间戳，毫秒",
+        "nuuid": null，丢弃,
+        "body": "[{\"state\":0,\"text\":\"010-8295-1332\\n中国自杀求助电话\\n如果你丧失了生活下去的动力\\n请你哪怕在最后 也要打这通电话\\n\\n——网易云热评《城南花已开》 ​​​\"}]",
+        "title": "标题",
+        "firstImg": "第一章图片",
+        "firstRecord": 丢弃,
+        "fileList": "图片列表",
+        "paper": 0，丢弃,
+        "topdate": "指定时间，unix时间戳，毫秒",
+        "encrypt": 0，丢弃,
+        "desktop": 0，丢弃,
+        "fontSize": 0，丢弃,
+        "remind": 0，丢弃,
+        "files": {图片列表},
+        "groupStatus": "分类id",
+        "firstImgSrc":"首张图片链接",
+        "firstRecordSrc": null，丢弃,
+        "types": null，丢弃
+    }
+  ]
