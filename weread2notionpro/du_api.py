@@ -16,7 +16,6 @@ DU_Chapter = "https://p.du.163.com/batch"
 class DUApi:
     def __init__(self):
         self.cookie = self.get_cookie()
-
         self.session = requests.Session()
         self.session.cookies = self.parse_cookie_string()
         # self.session.verify = False  # 禁用SSL验证
@@ -48,7 +47,7 @@ class DUApi:
         if (errcode == -2012 or errcode == -2010):
             print(f"::error::Cookie过期了。")
 
-    # 获取笔记列表
+    # 获取书列表
     @retry(stop_max_attempt_number=3, wait_fixed=5000)
     def get_book_list(self):
         self.session.get(DU_URL)
@@ -96,7 +95,7 @@ class DUApi:
         else:
             errcode = r.json().get("errcode", 0)
             self.handle_errcode(errcode)
-            raise Exception(f"获取笔记划线列表错误，错误如下： {r.text}")
+            raise Exception(f"获取书列表错误，错误如下： {r.text}")
 
         os.makedirs("Data_Star", exist_ok=True)
         output_path = os.path.join("Data_Star", "Du_bookList.json")

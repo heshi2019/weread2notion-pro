@@ -19,7 +19,6 @@ Flyme_data_URL = "https://notes.flyme.cn/c/browser/note/getnotegroups"
 class FlymeApi:
     def __init__(self):
         self.cookie = self.get_cookie()
-
         self.session = requests.Session()
         self.session.cookies = self.parse_cookie_string()
         self.session.verify = False  # 禁用SSL验证
@@ -27,7 +26,8 @@ class FlymeApi:
 
     def get_cookie(self):
         cookie = os.getenv("FLYME_COOKIE")
-        cookie = "lang=zh_CN; _uid=114155673; _keyLogin=86a80de50f5f1a0b88d091a784f204; _rmtk=e44242fb8e83ae40314485c3635351; DSESSIONID=8cf1c527-5873-4b29-aa66-9adb936628d5; _islogin=true; _uticket=sz_a5e464085a1f3c73bd2cf7343ac1febd; _ckk=sz_3982b332c02e72d6f26fa0b86e32d3b3; _cct=313734bfdb239eeab916d9a07b; JSESSIONID=node01ek3ne3wi4zug5lo3b8xgxq31615857.node0"
+        cookie ="lang=zh_CN; _uid=114155673; _keyLogin=86a80de50f5f1a0b88d091a784f204; _rmtk=e44242fb8e83ae40314485c3635351; DSESSIONID=6d88072e-3adf-4801-9635-9927537a147f; _islogin=true; _uticket=sz_0c43b9269f076008cc30debff035c8ac; _ckk=sz_e04c3423576c53b3ef4d33c08a365bc7; _cct=313734bfd82b99efb917dea57e; JSESSIONID=node01ui97aa36d6d4r0x3pw2cczzh1631853.node0"
+
         if not cookie or not cookie.strip():
             raise Exception("没有找到cookie，请按照文档填写cookie")
         return cookie
@@ -54,23 +54,27 @@ class FlymeApi:
     def get_Classification(self):
         self.session.post(Flyme_URL)
 
-        r = self.session.post(Flyme_Classification_URL)
-        print(f"这是返回的分类API数据{r.json()}")
-        print(f"这是返回的分类API数据1{r.json().get("returnValue",{}).get("data")}")
-        if r.ok:
+        headers = {
+            "sec-ch-ua-platform": "Windows",
+            "x-requested-with":"XMLHttpRequest",
+            "User-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+            "accept-encoding":"gzip, deflate, br, zstd",
+            "accept-language":"zh-CN,zh;q=0.9,en;q=0.8",
+            "Accept":"application/json, text/plain, */*"
+        }
+        r = self.session.post(Flyme_Classification_URL,headers=headers)
+
+        if r.ok and r.json().get("returnValue",{}).get("data",None) is not None:
             os.makedirs("Data_Star", exist_ok=True)
             output_path = os.path.join("Data_Star", "Flyme_Classification.json")
 
             with open(output_path, "w", encoding='utf-8') as f:
-                # 这个post请求返回的数据，如果经过json格式化再写入文件，会导致文件出现莫名其妙的\
-                # f.write(r.json().get("text"))
-                # f.write(r.json().get("returnValue",{}).get("data"))
                 f.write(json.dumps(r.json().get("returnValue",{}).get("data"), indent=4, ensure_ascii=False))
 
         else:
             errcode = r.json().get("errcode", 0)
             self.handle_errcode(errcode)
-            raise Exception(f"获取章节信息错误，错误如下： {r.text}")
+            raise Exception(f"获取分类信息错误，错误如下： {r.text}")
         return r.json().get("returnValue",{}).get("data")
 
 
@@ -90,9 +94,8 @@ class FlymeApi:
         }
 
         r = self.session.post(Flyme_data_URL,headers=headers, params=params)
-        print(f"这是返回的数据API数据{r.json()}")
-        print(f"这是返回的数据API数据1{r.json().get("returnValue",{}).get("content")}")
-        if r.ok:
+
+        if r.ok and r.json().get("returnValue",{}).get("content",None) is not None:
             os.makedirs("Data_Star", exist_ok=True)
             output_path = os.path.join("Data_Star", "Flyme_data.json")
 
@@ -104,6 +107,39 @@ class FlymeApi:
         else:
             errcode = r.json().get("errcode", 0)
             self.handle_errcode(errcode)
-            raise Exception(f"获取章节信息错误，错误如下： {r.text}")
+            raise Exception(f"获取笔记信息错误，错误如下： {r.text}")
 
         return r.json().get("returnValue",{}).get("content")
+
+    @retry(stop_max_attempt_number=3, wait_fixed=5000)
+    def get_FirstImg(self,imgUrl):
+        self.session.post(Flyme_URL)
+
+        headers = {
+            "sec-ch-ua-platform": "Windows",
+            "x-requested-with": "XMLHttpRequest",
+            "User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+        }
+
+        r = self.session.get(imgUrl, headers=headers)
+
+        if r.status_code == 200:
+            # 使用更精确的文件名提取方式
+            from urllib.parse import urlparse
+            parsed_url = urlparse(imgUrl)
+            path_parts = parsed_url.path.split('/')
+
+            # 提取倒数第二个路径段作为文件名（示例URL结构：.../filename/uuid）
+            filename = path_parts[-2] if len(path_parts) >= 2 else "unknown"
+
+            save_path = os.path.join("images", filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            with open(save_path, 'wb') as f:
+                f.write(r.content)
+            print(f"{filename}_图片下载成功")
+        else:
+            print(f"{imgUrl}_图片下载失败")
