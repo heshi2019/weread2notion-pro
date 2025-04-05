@@ -135,7 +135,7 @@ class FlymeApi:
             # 提取倒数第二个路径段作为文件名（示例URL结构：.../filename/uuid）
             filename = path_parts[-2] if len(path_parts) >= 2 else "unknown"
 
-            save_path = os.path.join("images", filename)
+            save_path = os.path.join("FlymeImages", filename)
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
             with open(save_path, 'wb') as f:

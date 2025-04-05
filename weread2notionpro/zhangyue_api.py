@@ -12,6 +12,27 @@ from retrying import retry
 ZhangYue_data_list = "https://ah2.zhangyue.com/zyuc/api/space/interact"
 ZhangYue_URL = "https://ah2.zhangyue.com"
 
+#
+# 获取一本书的章节，get请求
+# https://api-pc.zhangyue.com/bookstore/open/book/chapter/web/list?book_id=10867543&page=1&size=50&usr=i361520555&zysid=83340d05611f5c280f3f511414787529&p29=zye5b814&p2=104583&p3=101010010&p4=501603&p33=com.chaozh.iReaderFree
+#
+# 一本书的详细信息，目前知道的是有书籍分类
+# https://ah2.zhangyue.com/webintf/ClientApi_Book.BookResourceDetail
+#
+# 日志请求API
+# https://log.ireader.com/log-agent/rlog
+#
+# 笔记API可能是这个，但是返回内容被加密了
+# https://icloud.zhangyue.com/cloud/storage2/safe/downloadDataV2
+#
+# 疑似DRM密钥
+# https://romsdk-mobile.uu.163.com/v4/game
+#
+# https://dispatcher-mobile.uu.163.com/v4/host
+#
+# http://fp-it.fengkongcloud.com/v3/cloudconf
+
+
 class ZhangYueApi:
     def __init__(self):
         self.cookie = self.get_cookie()
@@ -30,7 +51,7 @@ class ZhangYueApi:
     def parse_cookie_string(self):
         cookies_dict = {}
 
-        # 使用正则表达式解析 cookie 字符串,不知道这个解析对网易蜗牛能不能生效
+        # 使用正则表达式解析 cookie 字符串
         pattern = re.compile(r'([^=]+)=([^;]+);?\s*')
         matches = pattern.findall(self.cookie)
 
@@ -58,24 +79,24 @@ class ZhangYueApi:
                       # 这个page值需要从1开始，如果超过了最大页数，会返回[]
                       "page": i,
                       "pageSize": 10,
-                      "zysid":"83340d05611f5c280f3f511414787529",
-                      "usr": "i361520555",
+                      "zysid":"",
+                      "usr": "",
                       "rgt": "7",
-                      "p1": "ffffffffffffffffffffffffff",
-                      "pc": "108032",
-                      "p3": "18010103",
+                      "p1": "",
+                      "pc": "",
+                      "p3": "",
                       "p4": "501603",
                       "p5": "19",
-                      "p7": "__7cd34834c5e81760",
-                      "p16": "24031",
-                      "p25": "__7cd34834c5e81760",
-                      "p28": "__7cd34834c5e81760",
-                      "p29": "__7cd34834c5e81760",
-                      "p30": "__7cd34834c5e81760",
+                      "p7": "",
+                      "p16": "",
+                      "p25": "",
+                      "p28": "",
+                      "p29": "",
+                      "p30": "",
                       "p31": "com.chaozh.iReaderFree",
-                      "p32": "__7cd34834c5e81760",
-                      "p33": "Xiaomi",
-                      "p34": "__7cd34834c5e81760",
+                      "p32": "",
+                      "p33": "",
+                      "p34": "",
                       }
 
             query_params = urlencode(params)
