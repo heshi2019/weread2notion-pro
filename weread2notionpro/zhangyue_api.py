@@ -32,6 +32,12 @@ ZhangYue_URL = "https://ah2.zhangyue.com"
 #
 # http://fp-it.fengkongcloud.com/v3/cloudconf
 
+#2025-04-04 04:36:15
+#这两天在做数据同步的项目，哪了逼的掌阅，这煞笔软件给笔记想法做drm加密，我艹了，小爷从晚上十点找到凌晨四点，书籍详情API找到了，书籍章节的API找到了，这个逼想法的API，死活找不到，好不容易找到个差不多的，还她妈加密，这个逼软件真是，啊，无语了
+
+#2025-04-04 04:47:38
+# 掌阅甚至对书籍原文没加密，对划线加密干嘛啊，我真他妈想不通
+
 
 class ZhangYueApi:
     def __init__(self):
