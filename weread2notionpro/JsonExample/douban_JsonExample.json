@@ -1,0 +1,175 @@
+ {
+        "comment": "评论",
+        "rating": {
+            "count": 1,
+            "max": 5,
+            "star_count": 3.0,
+            "value": 评分
+        },
+        "sharing_text": "我的评分：★★★ 夏洛克和莫里亚蒂这两人简直是半神 https://www.douban.com/doubanapp/dispatch/movie/6522269 来自@豆瓣App",
+        "sharing_url": "https://www.douban.com/doubanapp/dispatch?uri=/subject/6522269/interest/4489724008",
+        "tags": [],
+        "charts": [],
+        "platforms": [],
+        "vote_count": 1,
+        "create_time": "2025-03-25 22:28:18",
+        "status": "done",
+        "id": 4489724008,
+        "is_private": false,
+        "subject": {
+            "rating": {
+                "count": 430984,
+                "max": 10,
+                "star_count": 5.0,
+                "value": 9.6
+            },
+            "controversy_reason": "",
+            "pubdate": [
+                "2012-01-01(英国)"
+            ],
+            "pic": {
+                "large": "https://img1.doubanio.com/view/photo/m_ratio_poster/public/p2153367599.jpg",
+                "normal": "https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2153367599.jpg"
+            },
+            "honor_infos": [
+                {
+                    "kind": "tv",
+                    "uri": "douban://douban.com/subject_collection/ECZY5KBOQ?type=rank&category=movie&rank_type=tv_genre",
+                    "rank": 1,
+                    "title": "高分经典欧洲剧榜"
+                }
+            ],
+            "is_show": false,
+            "vendor_icons": [
+                "https://img9.doubanio.com/f/frodo/fbc90f355fc45d5d2056e0d88c697f9414b56b44/pics/vendors/tencent.png",
+                "https://img3.doubanio.com/f/frodo/0007fb12821ec88eedf33b5c9188a057b27a6191/pics/vendors/youku.png",
+                "https://img9.doubanio.com/f/frodo/88a62f5e0cf9981c910e60f4421c3e66aac2c9bc/pics/vendors/bilibili.png"
+            ],
+            "year": "2012",
+            "card_subtitle": "2012 / 英国 / 剧情 悬疑 犯罪 / 保罗·麦圭根 托比·海恩斯 / 本尼迪克特·康伯巴奇 马丁·弗瑞曼",
+            "id": "6522269",
+            "genres": [
+                "剧情",
+                "悬疑",
+                "犯罪"
+            ],
+            "title": "神探夏洛克  第二季",
+            "is_released": true,
+            "actors": [
+                {
+                    "name": "本尼迪克特·康伯巴奇"
+                },
+                {
+                    "name": "马丁·弗瑞曼"
+                },
+                {
+                    "name": "鲁珀特·格雷夫斯"
+                },
+                {
+                    "name": "马克·加蒂斯"
+                },
+                {
+                    "name": "安德鲁·斯科特"
+                },
+                {
+                    "name": "尤娜·斯塔布斯"
+                },
+                {
+                    "name": "露易丝·布瑞丽"
+                },
+                {
+                    "name": "劳拉·普沃"
+                },
+                {
+                    "name": "凯瑟琳·帕金森"
+                },
+                {
+                    "name": "拉塞尔·托维"
+                },
+                {
+                    "name": "阿米莉亚·布摩"
+                },
+                {
+                    "name": "伊恩·哈拉德"
+                },
+                {
+                    "name": "丹尼·韦伯"
+                },
+                {
+                    "name": "奥娜·卓别林"
+                },
+                {
+                    "name": "安德鲁·哈维尔"
+                },
+                {
+                    "name": "托德·博伊斯"
+                },
+                {
+                    "name": "理查德·坎宁汉姆"
+                },
+                {
+                    "name": "卢克·纽伯里"
+                },
+                {
+                    "name": "罗莎琳德·霍尔斯特德"
+                },
+                {
+                    "name": "彼得·佩德罗"
+                },
+                {
+                    "name": "霍纳·妮芙茜"
+                },
+                {
+                    "name": "汤玛欣·蓝德"
+                },
+                {
+                    "name": "利萨·麦克阿里斯特"
+                },
+                {
+                    "name": "Simon Thorp"
+                },
+                {
+                    "name": "Anthony Cozens"
+                },
+                {
+                    "name": "Rosemary Smith"
+                }
+            ],
+            "color_scheme": {
+                "is_dark": true,
+                "primary_color_light": "3a5972",
+                "_base_color": [
+                    0.5733333333333334,
+                    0.4901960784313726,
+                    0.2
+                ],
+                "secondary_color": "f4f7f9",
+                "_avg_color": [
+                    0.5533333333333333,
+                    0.2427184466019417,
+                    0.403921568627451
+                ],
+                "primary_color_dark": "263b4c"
+            },
+            "type": "tv",
+            "has_linewatch": true,
+            "vendor_desc": "",
+            "cover_url": "https://img1.doubanio.com/view/photo/m_ratio_poster/public/p2153367599.jpg",
+            "sharing_url": "https://www.douban.com/doubanapp/dispatch/movie/6522269",
+            "url": "https://movie.douban.com/subject/6522269/",
+            "release_date": null,
+            "uri": "douban://douban.com/tv/6522269",
+            "subtype": "tv",
+            "directors": [
+                {
+                    "name": "保罗·麦圭根"
+                },
+                {
+                    "name": "托比·海恩斯"
+                }
+            ],
+            "album_no_interact": false,
+            "article_intros": [],
+            "null_rating_reason": ""
+        }
+    },
