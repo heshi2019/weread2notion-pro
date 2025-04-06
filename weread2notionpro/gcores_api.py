@@ -230,24 +230,20 @@ class GcoresApi:
     @retry(stop_max_attempt_number=3, wait_fixed=5000)
     def get_Albums(self,albumsIds):
         global albumsList
-        albumsList = [{
-            "id": "87",
+        albumsList = {"87":{
             "type": "albums",
-
             "title": "有声书《紫与黑：K.J.帕克短篇小说集》 ",
-
-        }, {
-            "id": "152",
+        },"152":{
             "type": "albums",
             "title": "机核跑团：世界尽头的酒馆",
 
-        }]
+        }}
 
-        for value in albumsIds:
+        for key,value in albumsIds.items():
 
-            Gcores_Albums_URL = "https://www.gcores.com/gapi/v1/albums/"+str(value.get("id"))+"/published-audiobooks"
+            Gcores_Albums_URL = "https://www.gcores.com/gapi/v1/albums/"+str(key)+"/published-audiobooks"
 
-            for i in range(20, 200, 20):
+            for i in range(0, 200, 20):
                 params = {
                     "page[limit]": "20",
                     "page[offset]": i,
@@ -278,7 +274,7 @@ class GcoresApi:
                 if r.ok:
                     data = r.json()
                     # 筛选数据
-                    self.get_saveAlbumsData(data)
+                    self.get_saveAlbumsData(data,key)
                 else:
                     errcode = r.json().get("errcode",0)
                     self.handle_errcode(errcode)
@@ -290,7 +286,10 @@ class GcoresApi:
                 f.write(json.dumps(albumsList, indent=4, ensure_ascii=False))
 
 
-    def get_saveAlbumsData(self,albums):
+    # 添加专题所属节目与介绍，直接处理操作比较优雅，但处理数据嵌套太麻烦了，我再也不想碰了
+    def get_saveAlbumsData(self,albums,id):
+        global albumsList
+
         temp = []
         for item in albums.get("data",[]):
             temp.append(item.get("id"))
@@ -298,14 +297,14 @@ class GcoresApi:
         # albumsList是一个列表，列表中的字典才是要新增数据的地方
 
         # 专题节目列表
-        if albumsList.get("RadiosList",None) is None:
-            albumsList["RadiosList"] = temp
+        if albumsList.get(id,{}).get("RadiosList",None) is None:
+            albumsList[id]["RadiosList"] = temp
         else:
-            albumsList["RadiosList"].append(temp)
+            albumsList[id]["RadiosList"] = albumsList[id]["RadiosList"] + temp
 
         # 增加专题介绍
         included = albums.get("included", [])
-        if albumsList.get("description",None) is None:
-            description = included(len(included)-1).get("attributes",{}).get("description","")
-            albumsList["description"] = description
+        if albumsList.get(id).get("description",None) is None:
+            description = included[len(included)-1].get("attributes",{}).get("description","")
+            albumsList[id]["description"] = description
 

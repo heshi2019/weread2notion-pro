@@ -12,17 +12,14 @@ def main():
 
     # gcores_api.get_Radios()
 
-    temp =[{
-        "id": "87",
+    temp = {"87": {
         "type": "albums",
         "title": "有声书《紫与黑：K.J.帕克短篇小说集》 ",
-
-    },{
-        "id": "152",
+    }, "152": {
         "type": "albums",
         "title": "机核跑团：世界尽头的酒馆",
 
-    }]
+    }}
 
     gcores_api.get_Albums(temp)
 
