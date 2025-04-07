@@ -229,11 +229,11 @@ class GcoresApi:
                     userList.append(value.get("id"))
                 # 节目播放连接
                 url = "https://www.gcores.com/radios/" + str(id)
-                radiosList.append({"id": id, "title": title, "duration": duration, "cover": cover,
+                radiosList.append({"id": id, "title": title,"desc":desc,"content":content,
+                                   "duration": duration, "cover": cover,
                                    "published_at": published_at, "likes_count": likes_count,
-                                   "comments_count": comments_count, "category": category,
-                                   "userList": userList,"desc":desc,"bookmarks_count":bookmarks_count,
-                                   "content":content,"url":url})
+                                   "comments_count": comments_count,"bookmarks_count":bookmarks_count,
+                                   "category": category,"userList": userList,"url":url})
             # 分类
             elif item.get("type") == "categories":
                 if categoriesList.get("id", None) is None:
