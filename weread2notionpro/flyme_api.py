@@ -26,7 +26,7 @@ class FlymeApi:
 
     def get_cookie(self):
         cookie = os.getenv("FLYME_COOKIE")
-        cookie ="lang=zh_CN; _uid=114155673; _keyLogin=86a80de50f5f1a0b88d091a784f204; _rmtk=e44242fb8e83ae40314485c3635351; DSESSIONID=6d88072e-3adf-4801-9635-9927537a147f; _islogin=true; _uticket=sz_0c43b9269f076008cc30debff035c8ac; _ckk=sz_e04c3423576c53b3ef4d33c08a365bc7; _cct=313734bfd82b99efb917dea57e; JSESSIONID=node01ui97aa36d6d4r0x3pw2cczzh1631853.node0"
+        cookie =""
 
         if not cookie or not cookie.strip():
             raise Exception("没有找到cookie，请按照文档填写cookie")

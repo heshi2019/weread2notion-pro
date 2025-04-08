@@ -23,7 +23,7 @@ class DUApi:
 
     def get_cookie(self):
         cookie = os.getenv("DU_COOKIE")
-        cookie = "nts_mail_user=xieke6379@163.com:-1:1; NTES_P_UTID=UrJkEbo6qaCix8CzvKLDv9RYUfQ6jpBl|1740655265; P_INFO=xieke6379@163.com|1740655265|1|mail163|00&99|gas&1737599886&mail163#CN&null#10#0#0|&0||xieke6379@163.com; _ntes_nnid=5c0dfee99346d1da44005ae81bccea4a,1742883365014; _ntes_nuid=5c0dfee99346d1da44005ae81bccea4a; _cid=4c1c2f54-d51f-4762-bbcd-7aa96f5f7b41; _xsrf=da8bd23c-16d0-4a34-a06b-30f05b047401; JSESSIONID-WNYD-WEB=1743405976786-C94CF398A3F961E50D7DA4.hzabj-fehtml2img2; hb_MA-9691-1BA279D56416_source=cn.bing.com; X-Auth-Token=e16d7812d9a74dd8a6d132cb1afcc92e"
+        cookie = ""
 
         if not cookie or not cookie.strip():
             raise Exception("没有找到cookie，请按照文档填写cookie")

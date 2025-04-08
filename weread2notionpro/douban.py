@@ -8,7 +8,7 @@ def main():
     print("开始获取豆瓣电影")
     douban_api = DouBanApi()
     # 用户名
-    user = "252625928"
+    user = ""
 
     movie_status = {
         "mark": "想看",

@@ -16,7 +16,7 @@ import json
 
 
 def main():
-    file_path = r'C:\Users\28484\Desktop\谢柯的笔记.html'  # 必须是文件路径！
+    file_path = ""  # 必须是文件路径！
     data = html_file_to_json(file_path)
 
     # 保存数据
